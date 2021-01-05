@@ -1,4 +1,4 @@
-import Application from './core/Application';
+import Application from './app/Application';
 import gsap from 'gsap/all';
 
 if (process.env.NODE_ENV === 'development') {
