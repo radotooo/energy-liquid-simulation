@@ -1,4 +1,3 @@
-import { gsap } from 'gsap/all';
 import config from '../config';
 
 /**
