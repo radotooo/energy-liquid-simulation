@@ -7,6 +7,7 @@ import config from '../config';
 export default class Application {
   constructor() {
     this.config = config;
+    this.data = { };
 
     this.init();
   }
