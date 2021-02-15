@@ -1,5 +1,6 @@
 import config from '../config';
 import EventEmitter from 'eventemitter3';
+import Water from './custom/Water';
 
 const EVENTS = {
   APP_READY: 'app_ready',
@@ -14,7 +15,7 @@ export default class Application extends EventEmitter {
     super();
 
     this.config = config;
-    this.data = { };
+    this.data = {};
 
     this.init();
   }
@@ -32,7 +33,9 @@ export default class Application extends EventEmitter {
   async init() {
     // Initiate classes and wait for async operations here.
 
+    const animation = new Water();
+    document.getElementById('container').appendChild(animation.container);
+
     this.emit(Application.events.APP_READY);
   }
 }
-

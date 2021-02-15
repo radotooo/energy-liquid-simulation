@@ -1,4 +1,4 @@
-import Application from './core/Application';
+import Application from './app/Application';
 import gsap from 'gsap/all';
 
 if (process.env.NODE_ENV === 'development') {
@@ -12,5 +12,5 @@ document.addEventListener('DOMContentLoaded', () => {
   // Used for automated testing only
   if (process.env.NODE_ENV === 'development') {
     window.__GSAP_APP = app;
-  };
+  }
 });
