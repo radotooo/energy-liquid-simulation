@@ -1,6 +1,9 @@
 import config from '../config';
 import EventEmitter from 'eventemitter3';
-import Water from './custom/Water';
+
+import Wave from './custom/Wave';
+import Bubble from './custom/Bubble';
+import { getRandomNum } from './utils';
 
 const EVENTS = {
   APP_READY: 'app_ready',
@@ -24,6 +27,19 @@ export default class Application extends EventEmitter {
     return EVENTS;
   }
 
+  _addBubbles(count) {
+    for (let i = 0; i < count; i++) {
+      setTimeout(() => {
+        new Bubble();
+      }, getRandomNum(1, 8) * 1000);
+    }
+  }
+
+  _addWave() {
+    const wave = new Wave();
+    wave.animate();
+  }
+
   /**
    * Initializes the app.
    * Called when the DOM has loaded. You can initiate your custom classes here
@@ -32,9 +48,8 @@ export default class Application extends EventEmitter {
    */
   async init() {
     // Initiate classes and wait for async operations here.
-
-    const animation = new Water();
-    document.getElementById('container').appendChild(animation.container);
+    this._addWave();
+    this._addBubbles(20);
 
     this.emit(Application.events.APP_READY);
   }
