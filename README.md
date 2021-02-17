@@ -10,13 +10,10 @@ Name can be changed in config.js file
 <div class="container"></div>
 ```
 
-### Use this css values for best performance
+### Container must have position ralative set
 
 ```css
 position: relative;
-height: 100vh;
-width: 100vw;
-background-color: rgb(36, 73, 163);
 ```
 
 Includes:
