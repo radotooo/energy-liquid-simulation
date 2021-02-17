@@ -1,26 +1,51 @@
 import gsap from 'gsap/all';
 
-const svgns = 'http://www.w3.org/2000/svg';
-
 export default class Bubble {
-  constructor() {
-    this.element = document.createElementNS(svgns, 'circle');
-    this.parrentContainer = document.querySelector('.container');
+  constructor(loopForever) {
+    this.loopForever = loopForever;
 
-    this.init();
+    this.element = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'circle'
+    );
+    this.parrentContainer = document.querySelector('.container');
+    this.svg = document.querySelector('svg');
+
+    this._addTimeLine();
+    this._init();
     this.animate();
   }
 
-  init() {
+  /**
+   * Add gsap TimeLIne
+   * @private
+   */
+  _addTimeLine() {
+    this.tl = new gsap.timeline({
+      repeat: this.loopForever ? -1 : 0,
+      repeatRefresh: true,
+      onComplete: this.loopForever || this._clear.bind(this),
+    });
+  }
+
+  /**
+   * @private
+   */
+  _init() {
     this.element.setAttribute('fill', '#5cceee');
-    const svg = document.querySelector('svg');
-    svg.appendChild(this.element);
+    this.svg.appendChild(this.element);
+  }
+
+  /**
+   * Clear DOM from unused elements
+   * @private
+   */
+  _clear() {
+    this.svg.removeChild(this.element);
   }
 
   async animate() {
-    const tl = new gsap.timeline({ repeat: -1, repeatRefresh: true });
-
-    await tl
+    await this.tl
       .fromTo(
         this.element,
         {
@@ -28,12 +53,12 @@ export default class Bubble {
           attr: {
             cx: `random(1,${this.parrentContainer.offsetWidth})`,
             r: `random(1,10)`,
-            cy: 500,
+            cy: 450,
           },
           opacity: 1,
         },
         {
-          duration: 7,
+          duration: 5,
           ease: 'Power1.in',
           attr: {
             cy: 100,

@@ -1,4 +1,3 @@
-import config from '../config';
 import EventEmitter from 'eventemitter3';
 
 import Wave from './custom/Wave';
@@ -16,8 +15,6 @@ const EVENTS = {
 export default class Application extends EventEmitter {
   constructor() {
     super();
-
-    this.config = config;
     this.data = {};
 
     this.init();
@@ -27,17 +24,38 @@ export default class Application extends EventEmitter {
     return EVENTS;
   }
 
-  _addBubbles(count) {
+  /**
+   * Create bubbles
+   * @param {Number} count Number of bubbles to create
+   * @param {Number} timeDelay Time between each bubble spawn
+   * @param {Boolean} loopForever Keep bubble on screen forever
+   */
+  async _addBubbles(count, timeDelay, loopForever = true) {
     for (let i = 0; i < count; i++) {
       setTimeout(() => {
-        new Bubble();
-      }, getRandomNum(1, 8) * 1000);
+        new Bubble(loopForever);
+      }, getRandomNum(1, timeDelay) * 1000);
     }
   }
 
+  /**
+   * Add eventListener to wave element
+   * @private
+   */
+  _addEventListener() {
+    this.data.wave.element.addEventListener('click', () =>
+      this._addBubbles(10, 2, false)
+    );
+  }
+
+  /**
+   * Create wave element
+   * @private
+   */
   _addWave() {
     const wave = new Wave();
-    wave.animate();
+
+    this.data.wave = wave;
   }
 
   /**
@@ -49,8 +67,9 @@ export default class Application extends EventEmitter {
   async init() {
     // Initiate classes and wait for async operations here.
     this._addWave();
-    this._addBubbles(20);
+    this._addBubbles(20, 8);
 
+    this._addEventListener();
     this.emit(Application.events.APP_READY);
   }
 }
