@@ -10,7 +10,7 @@ Name can be changed in config.js file
 <div class="container"></div>
 ```
 
-### Container must have position ralative set
+### Container must have css position ralative set
 
 ```css
 position: relative;
