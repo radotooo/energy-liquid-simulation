@@ -1,19 +1,47 @@
+import EventEmitter from 'eventemitter3';
 import gsap from 'gsap/all';
+import config from '../../config';
+import { makeCssClassNameSelector } from '../utils';
 
-export default class Bubble {
-  constructor(loopForever) {
-    this.loopForever = loopForever;
+const EVENTS = {
+  ANIMATION_COMPLETE: 'animation_complete',
+};
 
-    this.element = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'circle'
-    );
-    this.parrentContainer = document.querySelector('.container');
-    this.svg = document.querySelector('svg');
+/**
+ * Create new Bubble svg
+ * @class
+ * @param {Boolean} loopInfinitly repeat the animation infinitly
+ */
+export default class Bubble extends EventEmitter {
+  constructor(loopInfinitly) {
+    super();
+    this.loopInfinitly = loopInfinitly;
+
+    /**
+     * @type {gsap.timeline}
+     * @private
+     */
+    this.tl = null;
 
     this._addTimeLine();
+    this._getParrentContainerSize();
     this._init();
-    this.animate();
+  }
+
+  static get events() {
+    return EVENTS;
+  }
+
+  /**
+   * Get parent container width
+   * @private
+   */
+  _getParrentContainerSize() {
+    const parentElement = document.querySelector(
+      makeCssClassNameSelector(config.wave.container.className)
+    );
+
+    this.parentWidth = parentElement.offsetWidth;
   }
 
   /**
@@ -22,9 +50,11 @@ export default class Bubble {
    */
   _addTimeLine() {
     this.tl = new gsap.timeline({
-      repeat: this.loopForever ? -1 : 0,
+      repeat: this.loopInfinitly ? -1 : 0,
       repeatRefresh: true,
-      onComplete: this.loopForever || this._clear.bind(this),
+      onComplete: () => {
+        this.emit(Bubble.events.ANIMATION_COMPLETE, this.element);
+      },
     });
   }
 
@@ -32,16 +62,17 @@ export default class Bubble {
    * @private
    */
   _init() {
-    this.element.setAttribute('fill', '#5cceee');
-    this.svg.appendChild(this.element);
-  }
+    this.element = document.createElementNS(
+      config.svgns,
+      config.bubble.type.circle
+    );
+    this.element.setAttribute('fill', config.bubble.color);
 
-  /**
-   * Clear DOM from unused elements
-   * @private
-   */
-  _clear() {
-    this.svg.removeChild(this.element);
+    // append to current svg dom element
+    this.svg = document.querySelector(
+      makeCssClassNameSelector(config.wave.svg.className)
+    );
+    this.svg.appendChild(this.element);
   }
 
   async animate() {
@@ -51,8 +82,8 @@ export default class Bubble {
         {
           duration: 0.01,
           attr: {
-            cx: `random(1,${this.parrentContainer.offsetWidth})`,
-            r: `random(1,10)`,
+            cx: `random(${config.bubble.animation.cxMin},${this.parentWidth})`,
+            r: `random(${config.bubble.animation.radiusMin},${config.bubble.animation.radiusMax})`,
             cy: 450,
           },
           opacity: 1,

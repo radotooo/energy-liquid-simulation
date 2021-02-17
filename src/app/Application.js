@@ -2,7 +2,9 @@ import EventEmitter from 'eventemitter3';
 
 import Wave from './custom/Wave';
 import Bubble from './custom/Bubble';
-import { getRandomNum } from './utils';
+import config from '../config';
+
+import { getRandomNum, makeCssClassNameSelector } from './utils';
 
 const EVENTS = {
   APP_READY: 'app_ready',
@@ -15,7 +17,6 @@ const EVENTS = {
 export default class Application extends EventEmitter {
   constructor() {
     super();
-    this.data = {};
 
     this.init();
   }
@@ -30,12 +31,29 @@ export default class Application extends EventEmitter {
    * @param {Number} timeDelay Time between each bubble spawn
    * @param {Boolean} loopForever Keep bubble on screen forever
    */
-  async _addBubbles(count, timeDelay, loopForever = true) {
+  async _addBubbles(count, timeDelayMin, timeDelayMax, loopForever = true) {
     for (let i = 0; i < count; i++) {
       setTimeout(() => {
-        new Bubble(loopForever);
-      }, getRandomNum(1, timeDelay) * 1000);
+        const bubble = new Bubble(loopForever);
+
+        bubble.on(Bubble.events.ANIMATION_COMPLETE, (el) =>
+          this._removeElement(el)
+        );
+        bubble.animate();
+      }, getRandomNum(timeDelayMin, timeDelayMax) * 1000);
     }
+  }
+
+  /**
+   * Remove unused bubble element from dom
+   * @param {Bubble} el instance of Bubble
+   */
+  _removeElement(el) {
+    const svg = document.querySelector(
+      makeCssClassNameSelector(config.wave.svg.className)
+    );
+
+    svg.removeChild(el);
   }
 
   /**
@@ -43,8 +61,13 @@ export default class Application extends EventEmitter {
    * @private
    */
   _addEventListener() {
-    this.data.wave.element.addEventListener('click', () =>
-      this._addBubbles(10, 2, false)
+    this.wave.element.addEventListener('click', () =>
+      this._addBubbles(
+        config.app.onClick.bubblecCount,
+        config.app.onClick.timeDelayMin,
+        config.app.onClick.timeDelayMax,
+        false
+      )
     );
   }
 
@@ -53,9 +76,8 @@ export default class Application extends EventEmitter {
    * @private
    */
   _addWave() {
-    const wave = new Wave();
-
-    this.data.wave = wave;
+    this.wave = new Wave();
+    this.wave.animate();
   }
 
   /**
@@ -67,9 +89,13 @@ export default class Application extends EventEmitter {
   async init() {
     // Initiate classes and wait for async operations here.
     this._addWave();
-    this._addBubbles(20, 8);
-
     this._addEventListener();
+    this._addBubbles(
+      config.app.infinityLoop.bubblesCount,
+      config.app.infinityLoop.timeDelayMin,
+      config.app.infinityLoop.timeDelayMax
+    );
+
     this.emit(Application.events.APP_READY);
   }
 }
