@@ -1,7 +1,5 @@
 import EventEmitter from 'eventemitter3';
 import gsap from 'gsap/all';
-import config from '../../config';
-import { makeCssClassNameSelector } from '../utils';
 
 const EVENTS = {
   ANIMATION_COMPLETE: 'animation_complete',
@@ -10,21 +8,39 @@ const EVENTS = {
 /**
  * Create new Bubble svg
  * @class
- * @param {Boolean} loopInfinitly repeat the animation infinitly
  */
 export default class Bubble extends EventEmitter {
-  constructor(loopInfinitly) {
+  /**
+   * @param {Object} config Bubble configuration
+   * @param {Boolean} loopInfinitly Repeat the animation infinitly
+   * @param {Number} parentWidth Width size of parrent dom element
+   */
+  constructor(config, loopInfinitly, parentWidth) {
     super();
-    this.loopInfinitly = loopInfinitly;
+    /**
+     * @type {Object}
+     * @private
+     */
+    this._config = config;
+
+    /**
+     * @type {Boolean}
+     * @private
+     */
+    this._loopInfinitly = loopInfinitly;
+
+    /**
+     * @type {Number}
+     * @private
+     */
+    this._parentWidth = parentWidth;
 
     /**
      * @type {gsap.timeline}
      * @private
      */
-    this.tl = null;
+    this._tl = null;
 
-    this._addTimeLine();
-    this._getParrentContainerSize();
     this._init();
   }
 
@@ -33,63 +49,24 @@ export default class Bubble extends EventEmitter {
   }
 
   /**
-   * Get parent container width
-   * @private
+   * Animate bubble element
+   * @public
    */
-  _getParrentContainerSize() {
-    const parentElement = document.querySelector(
-      makeCssClassNameSelector(config.wave.container.className)
-    );
-
-    this.parentWidth = parentElement.offsetWidth;
-  }
-
-  /**
-   * Add gsap TimeLIne
-   * @private
-   */
-  _addTimeLine() {
-    this.tl = new gsap.timeline({
-      repeat: this.loopInfinitly ? -1 : 0,
-      repeatRefresh: true,
-      onComplete: () => {
-        this.emit(Bubble.events.ANIMATION_COMPLETE, this.element);
-      },
-    });
-  }
-
-  /**
-   * @private
-   */
-  _init() {
-    this.element = document.createElementNS(
-      config.svgns,
-      config.bubble.type.circle
-    );
-    this.element.setAttribute('fill', config.bubble.color);
-
-    // append to current svg dom element
-    this.svg = document.querySelector(
-      makeCssClassNameSelector(config.wave.svg.className)
-    );
-    this.svg.appendChild(this.element);
-  }
-
   async animate() {
-    await this.tl
+    await this._tl
       .fromTo(
         this.element,
         {
           duration: 0.01,
           attr: {
-            cx: `random(${config.bubble.animation.cxMin},${this.parentWidth})`,
-            r: `random(${config.bubble.animation.radiusMin},${config.bubble.animation.radiusMax})`,
+            cx: `random(1,${this._parentWidth})`,
+            r: `random(${this._config.radiusMin},${this._config.radiusMax})`,
             cy: 450,
           },
           opacity: 1,
         },
         {
-          duration: 5,
+          duration: this._config.animation.duration,
           ease: 'Power1.in',
           attr: {
             cy: 100,
@@ -108,5 +85,40 @@ export default class Bubble extends EventEmitter {
         },
         '-=2.5'
       );
+  }
+
+  /**
+   * Initializes bubble element
+   * @private
+   */
+  _init() {
+    this._addBubble();
+    this._addTimeLine();
+  }
+
+  /**
+   * Add gsap TimeLIne
+   * @private
+   */
+  _addTimeLine() {
+    this._tl = new gsap.timeline({
+      repeat: this._loopInfinitly ? -1 : 0,
+      repeatRefresh: true,
+      onComplete: () => {
+        this.emit(Bubble.events.ANIMATION_COMPLETE, this.element);
+      },
+    });
+  }
+
+  /**
+   * Create svg elemenet
+   * @private
+   */
+  _addBubble() {
+    this.element = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'circle'
+    );
+    this.element.setAttribute('fill', this._config.color);
   }
 }

@@ -2,6 +2,8 @@
 
 This project implements a simple liquid simulation animation which when clicked creates more bubbles.
 
+![](src/assets/preview.gif)
+
 ### You need to add div element with class 'container'
 
 Name can be changed in config.js file
